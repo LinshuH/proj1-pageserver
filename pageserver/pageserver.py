@@ -17,8 +17,6 @@ import config    # Configure from .ini files and command line
 import logging   # Better than print statements
 logging.basicConfig(format='%(levelname)s:%(message)s',
                     level=logging.INFO)
-logging.basicConfig(format='%(levelname)s:%(message)s',
-                    level=logging.DEBUG)
 log = logging.getLogger(__name__)
 # Logging level may be overridden by configuration 
 
@@ -103,18 +101,12 @@ def respond(sock):
 
         # if in the right format, then check whether pages folder contain the file
         else:
-            source_path = os.path.join(DOCROOT, parts[1])
+            source_path = os.path.join(DOCROOT, parts[1][1:])
             log.debug("Source path: {}".format(source_path))
             try:
-                with open(os.path.join(DOCROOT, '/'+ parts[1]), 'r', encoding='utf-8') as source:
-                    transmit(line.strip(), sock)
-            
-            """
                 with open(source_path, 'r', encoding='utf-8') as source:
-                    for line in source:
-                        print(line.strip())
-            """
-
+                    transmit(source, sock)
+           
             #After the try, if the file is not find, then give the not find error.
             
             except OSError as error:
@@ -135,22 +127,6 @@ def respond(sock):
     sock.shutdown(socket.SHUT_RDWR)
     sock.close()
     return
-
-
-"""
-parts = request.split()
-    if len(parts) > 1 and parts[0] == "GET":
-        transmit(STATUS_OK, sock)
-        transmit(CAT, sock)
-    else:
-        log.info("Unhandled request: {}".format(request))
-        transmit(STATUS_NOT_IMPLEMENTED, sock)
-        transmit("\nI don't handle this request: {}\n".format(request), sock)
-
-    sock.shutdown(socket.SHUT_RDWR)
-    sock.close()
-    return
-"""
 
 
 def transmit(msg, sock):
@@ -186,7 +162,12 @@ def get_options():
 
 
 def main():
+    global DOCROOT
     options = get_options()
+    assert options.DOCROOT, "Document root must be specified in " \
+      + "configuration file credentials.ini or on command line"
+    #comment
+    DOCROOT = options.DOCROOT
     port = options.PORT
     if options.DEBUG:
         log.setLevel(logging.DEBUG)
