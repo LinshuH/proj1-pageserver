@@ -92,6 +92,8 @@ def respond(sock):
 
     parts = request.split()
     if len(parts) > 1 and parts[0] == "GET":
+        transmit(STATUS_OK, sock)
+        print("test***************************")
         # check the path format and file type
         if "//" in parts[1] or "~" in parts[1] or ".." in parts[1]:
             transmit(STATUS_FORBIDDEN, sock)
@@ -105,7 +107,8 @@ def respond(sock):
             log.debug("Source path: {}".format(source_path))
             try:
                 with open(source_path, 'r', encoding='utf-8') as source:
-                    transmit(source, sock)
+                    for line in source:
+                        transmit(line.strip(), sock)
            
             #After the try, if the file is not find, then give the not find error.
             
